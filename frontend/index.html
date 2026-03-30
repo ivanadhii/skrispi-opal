@@ -9,298 +9,551 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #0f1117;
-      --card: #1a1d27;
-      --border: #2a2d3e;
-      --text: #e2e8f0;
-      --muted: #94a3b8;
-      --accent: #6366f1;
-      --green: #10b981;
-      --yellow: #f59e0b;
-      --red: #ef4444;
-      --blue: #3b82f6;
-      --cyan: #06b6d4;
+      --bg:       #070b14;
+      --surface:  #0d1117;
+      --card:     #111827;
+      --card2:    #161d2b;
+      --border:   #1f2937;
+      --border2:  #273449;
+      --text:     #f1f5f9;
+      --muted:    #64748b;
+      --muted2:   #94a3b8;
+
+      --indigo:   #6366f1;
+      --indigo-g: #818cf8;
+      --green:    #10b981;
+      --green-g:  #34d399;
+      --blue:     #3b82f6;
+      --blue-g:   #60a5fa;
+      --amber:    #f59e0b;
+      --amber-g:  #fbbf24;
+      --cyan:     #06b6d4;
+      --cyan-g:   #22d3ee;
+      --red:      #ef4444;
     }
 
     body {
       background: var(--bg);
       color: var(--text);
-      font-family: 'Segoe UI', system-ui, sans-serif;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
       min-height: 100vh;
     }
 
+    /* ── Header ─────────────────────────────────────────────────────────── */
     header {
-      background: var(--card);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: rgba(7,11,20,0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border);
-      padding: 1rem 2rem;
+      padding: 0 2rem;
+      height: 58px;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .logo-icon {
+      width: 32px; height: 32px;
+      background: linear-gradient(135deg, var(--indigo), var(--cyan));
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
     }
 
     header h1 {
-      font-size: 1.25rem;
-      font-weight: 600;
-      letter-spacing: 0.01em;
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
     }
 
-    header h1 span {
-      color: var(--accent);
+    header h1 span { color: var(--indigo-g); }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
     }
 
-    .status-dot {
-      width: 10px;
-      height: 10px;
+    .clock {
+      font-size: 0.8rem;
+      color: var(--muted2);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .ws-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 99px;
+      border: 1px solid var(--border2);
+      background: var(--card);
+      font-size: 0.75rem;
+      color: var(--muted2);
+      transition: all 0.3s;
+    }
+
+    .ws-pill.connected {
+      border-color: rgba(16,185,129,0.4);
+      background: rgba(16,185,129,0.08);
+      color: var(--green-g);
+    }
+
+    .ws-pill.disconnected {
+      border-color: rgba(239,68,68,0.4);
+      background: rgba(239,68,68,0.08);
+      color: #fca5a5;
+    }
+
+    .ws-dot {
+      width: 7px; height: 7px;
       border-radius: 50%;
       background: var(--muted);
-      display: inline-block;
-      margin-right: 6px;
       transition: background 0.3s;
     }
-    .status-dot.connected { background: var(--green); box-shadow: 0 0 6px var(--green); }
-    .status-dot.disconnected { background: var(--red); }
 
-    .status-label { font-size: 0.8rem; color: var(--muted); }
+    .ws-pill.connected   .ws-dot { background: var(--green); box-shadow: 0 0 6px var(--green); }
+    .ws-pill.disconnected .ws-dot { background: var(--red); }
 
+    /* ── Layout ─────────────────────────────────────────────────────────── */
     main {
+      max-width: 1400px;
+      margin: 0 auto;
       padding: 2rem;
-      display: grid;
+      display: flex;
+      flex-direction: column;
       gap: 1.5rem;
+    }
+
+    /* ── Stats row ──────────────────────────────────────────────────────── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 1rem;
+    }
+
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+    }
+
+    .stat-card.pt100::before  { background: linear-gradient(90deg, var(--indigo), var(--indigo-g)); }
+    .stat-card.dht-t::before  { background: linear-gradient(90deg, var(--green), var(--green-g)); }
+    .stat-card.dht-h::before  { background: linear-gradient(90deg, var(--blue), var(--blue-g)); }
+    .stat-card.gy-obj::before { background: linear-gradient(90deg, var(--amber), var(--amber-g)); }
+    .stat-card.gy-amb::before { background: linear-gradient(90deg, var(--cyan), var(--cyan-g)); }
+
+    .stat-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--muted);
+    }
+
+    .stat-value {
+      font-size: 1.7rem;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+    }
+
+    .stat-value.pt100-c  { color: var(--indigo-g); }
+    .stat-value.dht-t-c  { color: var(--green-g); }
+    .stat-value.dht-h-c  { color: var(--blue-g); }
+    .stat-value.gy-obj-c { color: var(--amber-g); }
+    .stat-value.gy-amb-c { color: var(--cyan-g); }
+
+    .stat-sub {
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    /* ── Sensor cards ───────────────────────────────────────────────────── */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto auto;
+      gap: 1.25rem;
     }
 
     .sensor-card {
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: 12px;
-      padding: 1.5rem;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
     }
 
-    .sensor-header {
+    .sensor-card.wide {
+      grid-column: span 2;
+    }
+
+    .card-head {
+      padding: 1.1rem 1.5rem 0.9rem;
+      border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 1rem;
+      gap: 1rem;
+      background: var(--card2);
     }
 
-    .sensor-title {
+    .card-title-group {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: 0.65rem;
+    }
+
+    .sensor-icon {
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 17px;
+      flex-shrink: 0;
+    }
+
+    .sensor-icon.pt100  { background: rgba(99,102,241,0.12); }
+    .sensor-icon.dht22  { background: rgba(16,185,129,0.12); }
+    .sensor-icon.gy906  { background: rgba(245,158,11,0.12); }
+
+    .card-title h2 {
+      font-size: 0.92rem;
+      font-weight: 700;
+    }
+
+    .card-title p {
+      font-size: 0.73rem;
+      color: var(--muted);
+      margin-top: 1px;
     }
 
     .sensor-badge {
-      font-size: 0.7rem;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      padding: 3px 8px;
-      border-radius: 4px;
+      font-size: 0.65rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      padding: 3px 9px;
+      border-radius: 5px;
       text-transform: uppercase;
+      flex-shrink: 0;
     }
 
-    .badge-pt100  { background: rgba(99,102,241,0.15); color: var(--accent); }
-    .badge-dht22  { background: rgba(16,185,129,0.15); color: var(--green); }
-    .badge-gy906  { background: rgba(245,158,11,0.15);  color: var(--yellow); }
+    .badge-pt100 { background: rgba(99,102,241,0.15);  color: var(--indigo-g); border: 1px solid rgba(99,102,241,0.3); }
+    .badge-dht22 { background: rgba(16,185,129,0.15);  color: var(--green-g);  border: 1px solid rgba(16,185,129,0.3); }
+    .badge-gy906 { background: rgba(245,158,11,0.15);  color: var(--amber-g);  border: 1px solid rgba(245,158,11,0.3); }
 
-    .sensor-title h2 { font-size: 1rem; font-weight: 600; }
-    .sensor-desc { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
-
-    .readings {
-      display: flex;
-      gap: 1.5rem;
-      flex-wrap: wrap;
+    .last-update {
+      font-size: 0.68rem;
+      color: var(--muted);
     }
 
-    .reading-item {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
+    .chart-area {
+      padding: 1.25rem 1.5rem 1.25rem;
+      flex: 1;
     }
-
-    .reading-label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
-
-    .reading-value {
-      font-size: 1.5rem;
-      font-weight: 700;
-      font-variant-numeric: tabular-nums;
-    }
-
-    .reading-value.temp { color: var(--accent); }
-    .reading-value.hum  { color: var(--blue); }
-    .reading-value.obj  { color: var(--yellow); }
-    .reading-value.amb  { color: var(--cyan); }
 
     .chart-wrapper {
       position: relative;
-      height: 220px;
-      margin-top: 1rem;
+      height: 230px;
     }
 
+    /* ── Footer ─────────────────────────────────────────────────────────── */
     footer {
       text-align: center;
-      padding: 1.5rem;
-      font-size: 0.75rem;
+      padding: 1.25rem;
+      font-size: 0.72rem;
       color: var(--muted);
       border-top: 1px solid var(--border);
+      letter-spacing: 0.03em;
     }
 
-    @media (max-width: 600px) {
+    /* ── Responsive ─────────────────────────────────────────────────────── */
+    @media (max-width: 960px) {
+      .stats-row { grid-template-columns: repeat(3, 1fr); }
+      .charts-grid { grid-template-columns: 1fr; }
+      .sensor-card.wide { grid-column: span 1; }
+    }
+
+    @media (max-width: 640px) {
       main { padding: 1rem; }
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
       .chart-wrapper { height: 180px; }
+      header { padding: 0 1rem; }
+      .clock { display: none; }
     }
   </style>
 </head>
 <body>
 
 <header>
-  <h1>IoT <span>Sensor</span> Dashboard</h1>
-  <div>
-    <span class="status-dot" id="ws-dot"></span>
-    <span class="status-label" id="ws-label">Menghubungkan...</span>
+  <div class="header-left">
+    <div class="logo-icon">⚡</div>
+    <h1>IoT <span>Sensor</span> Dashboard</h1>
+  </div>
+  <div class="header-right">
+    <span class="clock" id="clock">--:--:--</span>
+    <div class="ws-pill" id="ws-pill">
+      <span class="ws-dot"></span>
+      <span id="ws-label">Menghubungkan...</span>
+    </div>
   </div>
 </header>
 
 <main>
 
-  <!-- PT100 -->
-  <div class="sensor-card">
-    <div class="sensor-header">
-      <div class="sensor-title">
-        <span class="sensor-badge badge-pt100">PT100</span>
-        <div>
-          <h2>PT100 — RTD Temperature</h2>
-          <div class="sensor-desc">Sensor suhu resistansi (Resistance Temperature Detector)</div>
-        </div>
-      </div>
-      <div class="readings">
-        <div class="reading-item">
-          <span class="reading-label">Suhu</span>
-          <span class="reading-value temp" id="pt100-temp">—</span>
-        </div>
-      </div>
+  <!-- Stats Row -->
+  <div class="stats-row">
+    <div class="stat-card pt100">
+      <span class="stat-label">PT100 — Suhu</span>
+      <span class="stat-value pt100-c" id="s-pt100-temp">—</span>
+      <span class="stat-sub">RTD Temperature</span>
     </div>
-    <div class="chart-wrapper">
-      <canvas id="chart-pt100"></canvas>
+    <div class="stat-card dht-t">
+      <span class="stat-label">DHT22 — Suhu</span>
+      <span class="stat-value dht-t-c" id="s-dht22-temp">—</span>
+      <span class="stat-sub">Air Temperature</span>
     </div>
-  </div>
-
-  <!-- DHT22 -->
-  <div class="sensor-card">
-    <div class="sensor-header">
-      <div class="sensor-title">
-        <span class="sensor-badge badge-dht22">DHT22</span>
-        <div>
-          <h2>DHT22 — Temperature & Humidity</h2>
-          <div class="sensor-desc">Sensor suhu dan kelembaban udara digital</div>
-        </div>
-      </div>
-      <div class="readings">
-        <div class="reading-item">
-          <span class="reading-label">Suhu</span>
-          <span class="reading-value temp" id="dht22-temp">—</span>
-        </div>
-        <div class="reading-item">
-          <span class="reading-label">Kelembaban</span>
-          <span class="reading-value hum" id="dht22-hum">—</span>
-        </div>
-      </div>
+    <div class="stat-card dht-h">
+      <span class="stat-label">DHT22 — Kelembaban</span>
+      <span class="stat-value dht-h-c" id="s-dht22-hum">—</span>
+      <span class="stat-sub">Relative Humidity</span>
     </div>
-    <div class="chart-wrapper">
-      <canvas id="chart-dht22"></canvas>
+    <div class="stat-card gy-obj">
+      <span class="stat-label">GY-906 — Objek</span>
+      <span class="stat-value gy-obj-c" id="s-gy906-obj">—</span>
+      <span class="stat-sub">Object Temperature</span>
+    </div>
+    <div class="stat-card gy-amb">
+      <span class="stat-label">GY-906 — Ambient</span>
+      <span class="stat-value gy-amb-c" id="s-gy906-amb">—</span>
+      <span class="stat-sub">Ambient Temperature</span>
     </div>
   </div>
 
-  <!-- GY906 -->
-  <div class="sensor-card">
-    <div class="sensor-header">
-      <div class="sensor-title">
-        <span class="sensor-badge badge-gy906">GY-906</span>
-        <div>
-          <h2>GY-906 — IR Temperature</h2>
-          <div class="sensor-desc">Sensor suhu inframerah non-kontak (MLX90614)</div>
-        </div>
-      </div>
-      <div class="readings">
-        <div class="reading-item">
-          <span class="reading-label">Objek</span>
-          <span class="reading-value obj" id="gy906-obj">—</span>
-        </div>
-        <div class="reading-item">
-          <span class="reading-label">Ambient</span>
-          <span class="reading-value amb" id="gy906-amb">—</span>
-        </div>
-      </div>
-    </div>
-    <div class="chart-wrapper">
-      <canvas id="chart-gy906"></canvas>
-    </div>
-  </div>
+  <!-- Charts Grid -->
+  <div class="charts-grid">
 
+    <!-- PT100 -->
+    <div class="sensor-card">
+      <div class="card-head">
+        <div class="card-title-group">
+          <div class="sensor-icon pt100">🌡️</div>
+          <div class="card-title">
+            <h2>PT100</h2>
+            <p>Resistance Temperature Detector</p>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:0.75rem">
+          <span class="last-update" id="lu-pt100">Belum ada data</span>
+          <span class="sensor-badge badge-pt100">PT100</span>
+        </div>
+      </div>
+      <div class="chart-area">
+        <div class="chart-wrapper"><canvas id="chart-pt100"></canvas></div>
+      </div>
+    </div>
+
+    <!-- GY-906 -->
+    <div class="sensor-card">
+      <div class="card-head">
+        <div class="card-title-group">
+          <div class="sensor-icon gy906">🔴</div>
+          <div class="card-title">
+            <h2>GY-906</h2>
+            <p>IR Non-Contact Temperature (MLX90614)</p>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:0.75rem">
+          <span class="last-update" id="lu-gy906">Belum ada data</span>
+          <span class="sensor-badge badge-gy906">GY-906</span>
+        </div>
+      </div>
+      <div class="chart-area">
+        <div class="chart-wrapper"><canvas id="chart-gy906"></canvas></div>
+      </div>
+    </div>
+
+    <!-- DHT22 — wide -->
+    <div class="sensor-card wide">
+      <div class="card-head">
+        <div class="card-title-group">
+          <div class="sensor-icon dht22">💧</div>
+          <div class="card-title">
+            <h2>DHT22</h2>
+            <p>Digital Temperature &amp; Humidity Sensor</p>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:0.75rem">
+          <span class="last-update" id="lu-dht22">Belum ada data</span>
+          <span class="sensor-badge badge-dht22">DHT22</span>
+        </div>
+      </div>
+      <div class="chart-area">
+        <div class="chart-wrapper"><canvas id="chart-dht22"></canvas></div>
+      </div>
+    </div>
+
+  </div>
 </main>
 
-<footer>IoT Dashboard — EMQX · PostgreSQL · Python FastAPI</footer>
+<footer>IoT Dashboard &mdash; EMQX &middot; PostgreSQL &middot; FastAPI</footer>
 
 <script>
-  const API = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  // ── Clock ───────────────────────────────────────────────────────────────
+  function tickClock() {
+    document.getElementById('clock').textContent =
+      new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  }
+  tickClock();
+  setInterval(tickClock, 1000);
+
+  // ── Config ──────────────────────────────────────────────────────────────
+  const API = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
     ? 'http://localhost:8000'
     : `http://${window.location.hostname}:8000`;
-
   const WS = API.replace('http', 'ws') + '/ws';
+  const MAX_POINTS = 60;
 
-  // ── Chart factory ────────────────────────────────────────────────────────────
+  // ── Chart factory ────────────────────────────────────────────────────────
+  function gradient(ctx, color) {
+    const g = ctx.createLinearGradient(0, 0, 0, 240);
+    g.addColorStop(0, color.replace(')', ', 0.25)').replace('rgb', 'rgba'));
+    g.addColorStop(1, color.replace(')', ', 0.0)').replace('rgb', 'rgba'));
+    return g;
+  }
+
+  function rgbHex(hex) {
+    const r = parseInt(hex.slice(1,3),16);
+    const g = parseInt(hex.slice(3,5),16);
+    const b = parseInt(hex.slice(5,7),16);
+    return `rgb(${r},${g},${b})`;
+  }
+
   function makeChart(id, datasets) {
-    const ctx = document.getElementById(id).getContext('2d');
+    const canvas = document.getElementById(id);
+    const ctx = canvas.getContext('2d');
+
+    const builtDatasets = datasets.map(ds => ({
+      ...ds,
+      backgroundColor: (() => {
+        const g = ctx.createLinearGradient(0, 0, 0, 280);
+        const c = ds.borderColor;
+        const rgb = c.startsWith('#') ? rgbHex(c) : c;
+        g.addColorStop(0, rgb.replace('rgb(', 'rgba(').replace(')', ', 0.20)'));
+        g.addColorStop(1, rgb.replace('rgb(', 'rgba(').replace(')', ', 0.00)'));
+        return g;
+      })(),
+      borderWidth: 2,
+      tension: 0.45,
+      pointRadius: 0,
+      pointHoverRadius: 5,
+      pointHoverBorderWidth: 2,
+      fill: ds.fill !== undefined ? ds.fill : true,
+    }));
+
     return new Chart(ctx, {
       type: 'line',
-      data: { labels: [], datasets },
+      data: { labels: [], datasets: builtDatasets },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        animation: false,
+        animation: { duration: 250 },
         interaction: { mode: 'index', intersect: false },
         plugins: {
-          legend: { labels: { color: '#94a3b8', font: { size: 11 } } },
+          legend: {
+            position: 'top',
+            align: 'end',
+            labels: {
+              color: '#94a3b8',
+              font: { size: 11 },
+              boxWidth: 12,
+              boxHeight: 2,
+              padding: 12,
+              usePointStyle: true,
+              pointStyle: 'line',
+            },
+          },
           tooltip: {
-            backgroundColor: '#1a1d27',
-            borderColor: '#2a2d3e',
+            backgroundColor: '#0d1117',
+            borderColor: '#1f2937',
             borderWidth: 1,
-            titleColor: '#e2e8f0',
+            titleColor: '#f1f5f9',
             bodyColor: '#94a3b8',
+            padding: 10,
+            cornerRadius: 8,
+            callbacks: {
+              label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}`,
+            },
           },
         },
         scales: {
           x: {
-            ticks: { color: '#64748b', maxTicksLimit: 8, maxRotation: 0 },
-            grid: { color: '#1e2130' },
+            ticks: {
+              color: '#475569',
+              maxTicksLimit: 8,
+              maxRotation: 0,
+              font: { size: 10 },
+            },
+            grid: { color: '#111827', drawBorder: false },
+            border: { color: '#1f2937' },
           },
           y: {
-            ticks: { color: '#64748b' },
-            grid: { color: '#1e2130' },
+            ticks: {
+              color: '#475569',
+              font: { size: 10 },
+              padding: 8,
+            },
+            grid: { color: '#1a2234', drawBorder: false },
+            border: { color: '#1f2937', dash: [4,4] },
           },
         },
       },
     });
   }
 
-  const MAX_POINTS = 50;
-
   const chartPT100 = makeChart('chart-pt100', [
-    { label: 'Suhu (°C)', data: [], borderColor: '#6366f1', backgroundColor: 'rgba(99,102,241,0.08)', tension: 0.4, pointRadius: 2, fill: true },
+    { label: 'Suhu (°C)', data: [], borderColor: '#818cf8' },
   ]);
 
   const chartDHT22 = makeChart('chart-dht22', [
-    { label: 'Suhu (°C)',     data: [], borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.08)', tension: 0.4, pointRadius: 2, fill: false },
-    { label: 'Kelembaban (%)', data: [], borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.08)', tension: 0.4, pointRadius: 2, fill: false },
+    { label: 'Suhu (°C)',      data: [], borderColor: '#34d399', fill: true },
+    { label: 'Kelembaban (%)', data: [], borderColor: '#60a5fa', fill: true },
   ]);
 
   const chartGY906 = makeChart('chart-gy906', [
-    { label: 'Suhu Objek (°C)',   data: [], borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,0.08)', tension: 0.4, pointRadius: 2, fill: false },
-    { label: 'Suhu Ambient (°C)', data: [], borderColor: '#06b6d4', backgroundColor: 'rgba(6,182,212,0.08)',  tension: 0.4, pointRadius: 2, fill: false },
+    { label: 'Suhu Objek (°C)',   data: [], borderColor: '#fbbf24', fill: true },
+    { label: 'Suhu Ambient (°C)', data: [], borderColor: '#22d3ee', fill: false },
   ]);
 
-  // ── Helpers ──────────────────────────────────────────────────────────────────
+  // ── Helpers ──────────────────────────────────────────────────────────────
   function fmtTime(iso) {
-    const d = new Date(iso);
-    return d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    return new Date(iso).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   }
 
   function pushPoint(chart, label, ...values) {
@@ -314,16 +567,21 @@
   }
 
   function setText(id, val) {
-    document.getElementById(id).textContent = val;
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
   }
 
-  // ── Load history ─────────────────────────────────────────────────────────────
+  function setLastUpdate(id, iso) {
+    setText(id, 'Update: ' + fmtTime(iso));
+  }
+
+  // ── Load history ─────────────────────────────────────────────────────────
   async function loadHistory() {
     try {
       const [r1, r2, r3] = await Promise.all([
-        fetch(`${API}/api/pt100/latest?limit=50`).then(r => r.json()),
-        fetch(`${API}/api/dht22/latest?limit=50`).then(r => r.json()),
-        fetch(`${API}/api/gy906/latest?limit=50`).then(r => r.json()),
+        fetch(`${API}/api/pt100/latest?limit=60`).then(r => r.json()),
+        fetch(`${API}/api/dht22/latest?limit=60`).then(r => r.json()),
+        fetch(`${API}/api/gy906/latest?limit=60`).then(r => r.json()),
       ]);
 
       r1.forEach(d => pushPoint(chartPT100, fmtTime(d.created_at), d.temperature));
@@ -331,56 +589,61 @@
       r3.forEach(d => pushPoint(chartGY906, fmtTime(d.created_at), d.object_temp, d.ambient_temp));
 
       if (r1.length) {
-        const last = r1[r1.length - 1];
-        setText('pt100-temp', last.temperature.toFixed(1) + ' °C');
+        const l = r1[r1.length - 1];
+        setText('s-pt100-temp', l.temperature.toFixed(1) + ' °C');
+        setLastUpdate('lu-pt100', l.created_at);
       }
       if (r2.length) {
-        const last = r2[r2.length - 1];
-        setText('dht22-temp', last.temperature.toFixed(1) + ' °C');
-        setText('dht22-hum', last.humidity.toFixed(1) + ' %');
+        const l = r2[r2.length - 1];
+        setText('s-dht22-temp', l.temperature.toFixed(1) + ' °C');
+        setText('s-dht22-hum',  l.humidity.toFixed(1) + ' %');
+        setLastUpdate('lu-dht22', l.created_at);
       }
       if (r3.length) {
-        const last = r3[r3.length - 1];
-        setText('gy906-obj', last.object_temp.toFixed(1) + ' °C');
-        setText('gy906-amb', last.ambient_temp.toFixed(1) + ' °C');
+        const l = r3[r3.length - 1];
+        setText('s-gy906-obj', l.object_temp.toFixed(1) + ' °C');
+        setText('s-gy906-amb', l.ambient_temp.toFixed(1) + ' °C');
+        setLastUpdate('lu-gy906', l.created_at);
       }
     } catch (e) {
       console.error('Failed to load history:', e);
     }
   }
 
-  // ── WebSocket ────────────────────────────────────────────────────────────────
-  const dot   = document.getElementById('ws-dot');
-  const label = document.getElementById('ws-label');
+  // ── WebSocket ────────────────────────────────────────────────────────────
+  const pill = document.getElementById('ws-pill');
 
-  function setStatus(connected) {
-    dot.className = 'status-dot ' + (connected ? 'connected' : 'disconnected');
-    label.textContent = connected ? 'Terhubung' : 'Terputus';
+  function setStatus(state) {
+    pill.className = 'ws-pill ' + state;
+    setText('ws-label', state === 'connected' ? 'Terhubung' : 'Terputus');
   }
 
   function connectWS() {
+    setStatus('connecting');
     const ws = new WebSocket(WS);
 
-    ws.onopen  = () => setStatus(true);
-    ws.onclose = () => { setStatus(false); setTimeout(connectWS, 3000); };
+    ws.onopen  = () => setStatus('connected');
+    ws.onclose = () => { setStatus('disconnected'); setTimeout(connectWS, 3000); };
     ws.onerror = () => ws.close();
 
     ws.onmessage = ({ data }) => {
-      const msg = JSON.parse(data);
-      const { sensor, data: d } = msg;
+      const { sensor, data: d } = JSON.parse(data);
       const t = fmtTime(d.created_at);
 
       if (sensor === 'pt100') {
         pushPoint(chartPT100, t, d.temperature);
-        setText('pt100-temp', d.temperature.toFixed(1) + ' °C');
+        setText('s-pt100-temp', d.temperature.toFixed(1) + ' °C');
+        setLastUpdate('lu-pt100', d.created_at);
       } else if (sensor === 'dht22') {
         pushPoint(chartDHT22, t, d.temperature, d.humidity);
-        setText('dht22-temp', d.temperature.toFixed(1) + ' °C');
-        setText('dht22-hum',  d.humidity.toFixed(1) + ' %');
+        setText('s-dht22-temp', d.temperature.toFixed(1) + ' °C');
+        setText('s-dht22-hum',  d.humidity.toFixed(1) + ' %');
+        setLastUpdate('lu-dht22', d.created_at);
       } else if (sensor === 'gy906') {
         pushPoint(chartGY906, t, d.object_temp, d.ambient_temp);
-        setText('gy906-obj', d.object_temp.toFixed(1) + ' °C');
-        setText('gy906-amb', d.ambient_temp.toFixed(1) + ' °C');
+        setText('s-gy906-obj', d.object_temp.toFixed(1) + ' °C');
+        setText('s-gy906-amb', d.ambient_temp.toFixed(1) + ' °C');
+        setLastUpdate('lu-gy906', d.created_at);
       }
     };
   }
