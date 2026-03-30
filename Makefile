@@ -8,4 +8,4 @@ restart:
 	docker compose restart
 
 rebuild:
-	docker compoose down && docker compose up -d --build
+	docker compose down && docker compose up -d --build
